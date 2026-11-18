@@ -1,0 +1,372 @@
+.find-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+  font-family: "Nunito", sans-serif;
+  background-color: #281343;
+  background-image:
+    linear-gradient(rgba(41, 17, 68, 0.42), rgba(41, 17, 68, 0.42)),
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    radial-gradient(ellipse at 6% 40%, #6524b1 0, transparent 48%),
+    radial-gradient(ellipse at 95% 70%, #a32972 0, transparent 48%),
+    linear-gradient(115deg, #201039, #3b174a 55%, #5e1d52);
+  background-size:
+    auto,
+    32px 32px,
+    32px 32px,
+    auto,
+    auto,
+    auto;
+}
+.find-header {
+  height: 83px;
+  flex: 0 0 83px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 max(calc((100% - 1328px) / 2), 7.5%);
+  background: rgba(13, 14, 37, 0.86);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.13);
+}
+.find-brand,
+.find-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  color: #fff;
+}
+.find-logo {
+  width: 50px;
+  height: 50px;
+  border-radius: 15px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: linear-gradient(140deg, #b53df4, #ec39b2);
+  box-shadow: 0 0 24px #ce44ed66;
+}
+.find-brand b {
+  display: block;
+  font-size: 24px;
+  line-height: 25px;
+  font-weight: 1000;
+  letter-spacing: -0.5px;
+}
+.find-brand small,
+.find-footer-brand small {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.3px;
+  color: #c9c4dc;
+  font-weight: 800;
+}
+.find-nav {
+  display: flex;
+  align-items: center;
+  gap: 37px;
+}
+.find-nav a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 900;
+  color: #f7f4ff;
+  white-space: nowrap;
+}
+.find-nav a:hover,
+.find-nav a.selected {
+  color: #fff;
+  text-shadow: 0 0 12px #e94cf2;
+}
+.find-main {
+  flex: 1;
+  min-height: 500px;
+  display: grid;
+  place-items: center;
+  padding: 46px 20px;
+}
+.find-card {
+  width: min(792px, 100%);
+  min-height: 437px;
+  padding: 33px 13px 34px;
+  border: 1px solid rgba(221, 175, 243, 0.42);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.075);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 17px;
+}
+.download-button {
+  height: 40px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border-radius: 24px;
+  background: #18c7c9;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 1000;
+  box-shadow: 0 0 24px #22d8df72;
+  margin-bottom: 30px;
+}
+.utr-label {
+  width: min(723px, 100%);
+  height: 51px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid #9174db;
+  border-radius: 14px;
+  background: linear-gradient(100deg, #4164ce, #8b46ae);
+  font-size: 16px;
+  font-weight: 700;
+}
+.utr-label span {
+  font-size: 17px;
+}
+.utr-input {
+  width: min(723px, 100%);
+  height: 66px;
+  border: 1px solid #8436ea;
+  border-radius: 14px;
+  background: #130d2d;
+  color: #fff;
+  text-align: center;
+  font:
+    800 16px "Nunito",
+    sans-serif;
+  outline: none;
+}
+.utr-input::placeholder {
+  color: #9692a6;
+}
+.utr-input:focus {
+  border-color: #d442ea;
+  box-shadow: 0 0 0 3px #cf39ea24;
+}
+.fetch-button {
+  width: min(723px, 100%);
+  height: 60px;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(100deg, #ba30f5, #f23dcb);
+  box-shadow: 0 0 22px #e135cc68;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font:
+    1000 20px "Nunito",
+    sans-serif;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+.find-message {
+  width: min(723px, 100%);
+  height: 45px;
+  border: 1px solid #a83192;
+  border-radius: 13px;
+  background: rgba(68, 29, 83, 0.52);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 14px;
+  font-weight: 900;
+}
+.find-footer {
+  height: 100px;
+  flex: 0 0 100px;
+  padding: 0 max(calc((100% - 1328px) / 2), 7.5%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(11, 20, 44, 0.91);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+.find-footer-brand b {
+  font-size: 20px;
+  font-weight: 1000;
+}
+.find-footer-brand small {
+  text-align: center;
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.find-footer-brand .find-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+}
+.find-socials {
+  display: flex;
+  gap: 10px;
+}
+.find-socials a {
+  width: 42px;
+  height: 42px;
+  border: 1px solid #424d6d;
+  border-radius: 12px;
+  background: #18233d;
+  display: grid;
+  place-items: center;
+  color: #12d992;
+}
+.find-socials a:nth-child(2) {
+  color: #2eaff5;
+}
+.find-socials a:nth-child(3) {
+  color: #ed4aa9;
+}
+.find-socials svg {
+  width: 18px;
+}
+.find-footer p {
+  text-align: right;
+  font-size: 12px;
+  line-height: 19px;
+  font-weight: 900;
+}
+.find-footer p small {
+  color: #c7c8d9;
+  font-weight: 500;
+}
+.find-chat {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  background: #0bc96f;
+  border: 6px solid #29df8755;
+  display: grid;
+  place-items: center;
+  color: white;
+  box-shadow: 0 0 22px #13d78080;
+  z-index: 3;
+}
+.find-page button,
+.find-page .download-button,
+.find-page .find-nav a,
+.find-page .find-socials a,
+.find-page .find-chat {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+.find-page button:hover,
+.find-page .download-button:hover,
+.find-page .find-nav a:hover,
+.find-page .find-socials a:hover,
+.find-page .find-chat:hover {
+  transform: translateY(-3px);
+  filter: brightness(1.12);
+  box-shadow: 0 8px 20px rgba(226, 57, 220, 0.35);
+}
+.find-page button:active,
+.find-page .download-button:active,
+.find-page .find-nav a:active,
+.find-page .find-socials a:active,
+.find-page .find-chat:active {
+  transform: translateY(0) scale(0.98);
+}
+@media (max-width: 760px) {
+  .find-header {
+    height: auto;
+    min-height: 76px;
+    flex-basis: auto;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 12px 18px;
+  }
+  .find-brand b {
+    font-size: 20px;
+  }
+  .find-logo {
+    width: 43px;
+    height: 43px;
+  }
+  .find-nav {
+    width: 100%;
+    justify-content: space-between;
+    gap: 12px;
+    overflow: auto;
+    padding: 2px 0 5px;
+  }
+  .find-nav a {
+    font-size: 12px;
+  }
+  .find-nav svg {
+    width: 14px;
+  }
+  .find-main {
+    padding: 35px 15px;
+    min-height: 480px;
+  }
+  .find-card {
+    min-height: 0;
+    padding: 28px 13px;
+    border-radius: 22px;
+    gap: 15px;
+  }
+  .download-button {
+    margin-bottom: 9px;
+  }
+  .utr-label {
+    font-size: 13px;
+  }
+  .utr-input {
+    height: 59px;
+    font-size: 14px;
+  }
+  .fetch-button {
+    width: min(723px, 100%);
+    height: 40px;
+    font-size: 12px;
+  }
+  .find-message {
+    font-size: 12px;
+  }
+  .find-footer {
+    height: auto;
+    min-height: 140px;
+    flex-basis: auto;
+    padding: 17px 16px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 14px;
+  }
+  .find-footer-brand b {
+    font-size: 14px;
+  }
+  .find-footer-brand .find-logo {
+    width: 38px;
+    height: 38px;
+  }
+  .find-socials {
+    grid-column: 1/-1;
+    grid-row: 2;
+    justify-content: center;
+  }
+  .find-footer p {
+    font-size: 10px;
+  }
+  .find-chat {
+    width: 54px;
+    height: 54px;
+  }
+}
