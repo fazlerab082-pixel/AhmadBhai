@@ -13,6 +13,22 @@ function json(body: Record<string, unknown>, status = 200) {
   });
 }
 
+async function refreshStockCounts(db: any) {
+  const { data: accounts, error: inventoryError } = await db
+    .from("account_inventory")
+    .select("aadhaar_verified")
+    .eq("status", "available");
+  if (inventoryError) return inventoryError;
+  const aadhaarCount = (accounts ?? []).filter((account: { aadhaar_verified: boolean }) => account.aadhaar_verified).length;
+  const normalCount = (accounts ?? []).length - aadhaarCount;
+  const { error } = await db.from("account_store_settings").update({
+    available_count: normalCount,
+    aadhaar_available_count: aadhaarCount,
+    updated_at: new Date().toISOString(),
+  }).eq("id", true);
+  return error;
+}
+
 function toBase64Url(bytes: Uint8Array) {
   let binary = "";
   for (const byte of bytes) binary += String.fromCharCode(byte);
@@ -171,6 +187,8 @@ async function handleRequest(req: Request, ctx: any) {
   if (!isAdmin) return json({ error: "Admin access is required." }, 403);
 
   if (action === "listAccounts") {
+    const countError = await refreshStockCounts(db);
+    if (countError) console.error("Could not refresh account store counts:", countError.code ?? "unknown");
     const { data, error } = await db
       .from("account_inventory")
       .select("id, username, aadhaar_verified, status, created_at")
@@ -196,6 +214,8 @@ async function handleRequest(req: Request, ctx: any) {
       console.error("Could not add account inventory:", error.code ?? "unknown");
       return json({ error: "Could not add the account." }, 500);
     }
+    const countError = await refreshStockCounts(db);
+    if (countError) console.error("Could not refresh account store counts:", countError.code ?? "unknown");
     return json({ ok: true });
   }
 
@@ -210,6 +230,8 @@ async function handleRequest(req: Request, ctx: any) {
     if (account.status !== "available") return json({ error: "Sold accounts cannot be removed from order history." }, 409);
     const { error } = await db.from("account_inventory").delete().eq("id", id).eq("status", "available");
     if (error) return json({ error: "Could not remove the account." }, 500);
+    const countError = await refreshStockCounts(db);
+    if (countError) console.error("Could not refresh account store counts:", countError.code ?? "unknown");
     return json({ ok: true });
   }
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Boxes, Check, ClipboardList, KeyRound, LogOut, PackagePlus, Save, ShieldCheck, Store, Trash2 } from 'lucide-react';
+import { Boxes, Check, ClipboardList, Eye, EyeOff, KeyRound, LogOut, Save, ShieldCheck, Store, Trash2 } from 'lucide-react';
 import { readCatalog, saveCatalog, useCatalog } from './catalog.js';
 import { accountStoreRequest } from '../utils/accountStore.js';
 import { supabase } from '../utils/supabase';
@@ -28,6 +28,7 @@ export default function Admin() {
   const [orders, setOrders] = React.useState([]);
   const [accountUsername, setAccountUsername] = React.useState('');
   const [accountPassword, setAccountPassword] = React.useState('');
+  const [showAccountPassword, setShowAccountPassword] = React.useState(false);
   const [accountAadhaarVerified, setAccountAadhaarVerified] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const [notice, setNotice] = React.useState('');
@@ -54,7 +55,9 @@ export default function Admin() {
 
   async function loadAccounts() {
     const data = await accountStoreRequest({ action: 'listAccounts' });
-    setAccounts(data.accounts ?? []);
+    const inventory = data.accounts ?? [];
+    setAccounts(inventory);
+    return inventory;
   }
 
   async function loadOrders() {
@@ -106,15 +109,6 @@ export default function Admin() {
     setSaved(false);
   }
 
-  function addProduct() {
-    const id = `item-${Date.now()}`;
-    setCatalog(current => ({
-      ...current,
-      products: [...current.products, { id, name: 'NEW PRODUCT', stock: 0, price: 35, description: 'Product description' }],
-    }));
-    setSaved(false);
-  }
-
   async function persist() {
     setBusy(true);
     setError('');
@@ -139,13 +133,20 @@ export default function Admin() {
     setError('');
     setNotice('');
     try {
-      await accountStoreRequest({ action: 'addAccount', username: accountUsername, password: accountPassword, aadhaarVerified: accountAadhaarVerified });
+      const addedUsername = accountUsername.trim();
+      const expectedAadhaarVerified = accountAadhaarVerified;
+      await accountStoreRequest({ action: 'addAccount', username: addedUsername, password: accountPassword, aadhaarVerified: expectedAadhaarVerified });
       setAccountUsername('');
       setAccountPassword('');
       setAccountAadhaarVerified(false);
-      await loadAccounts();
+      const inventory = await loadAccounts();
       window.dispatchEvent(new Event('catalog-updated'));
-      setNotice('Account added to available inventory.');
+      const savedAccount = inventory.find(account => account.username === addedUsername);
+      if (!savedAccount || savedAccount.aadhaar_verified !== expectedAadhaarVerified) {
+        setError('Account was saved, but its Aadhaar category did not match the checkbox. Redeploy the latest account-store Edge Function, then refresh inventory.');
+      } else {
+        setNotice(`Account added as ${expectedAadhaarVerified ? 'Aadhaar verified' : 'Normal'}.`);
+      }
     } catch (addError) {
       setError(addError.message);
     } finally {
@@ -221,14 +222,14 @@ export default function Admin() {
       {notice && <p className="admin-banner success" role="status"><Check size={16} /> {notice}</p>}
 
       {section === 'products' && <>
-        <div className="admin-section-title"><div><h2>Product catalog</h2><p>Normal and Aadhaar ID prices and stock are shared through Supabase.</p></div><button className="admin-add" onClick={addProduct}><PackagePlus size={17} /> Add product</button></div>
+        <div className="admin-section-title"><div><h2>Product catalog</h2><p>Normal and Aadhaar ID prices and stock are shared through Supabase.</p></div></div>
         <section className="admin-products">{catalog.products.map((product, index) => <article className="admin-product" key={product.id}><div className="admin-product-top"><div className="admin-product-number">{String(index + 1).padStart(2, '0')}</div><div><h3>{product.name || 'Untitled product'}</h3><span className={product.stock > 0 ? 'stock-badge in-stock' : 'stock-badge out-stock'}>{product.stock > 0 ? 'In stock' : 'Out of stock'}</span></div></div><div className="admin-fields"><label>Product name<input value={product.name} onChange={e => updateProduct(product.id, 'name', e.target.value)} /></label><label>Price per ID (₹)<input type="number" min="0" step="0.01" value={product.price} disabled={product.id !== 'normal' && product.id !== 'aadhaar'} onChange={e => updateProduct(product.id, 'price', e.target.value)} /></label><label>Stock quantity<input type="number" min="0" value={product.stock} disabled={product.id === 'aadhaar' || product.id === 'normal'} onChange={e => updateProduct(product.id, 'stock', e.target.value)} /></label><label className="field-wide">Description<input value={product.description} onChange={e => updateProduct(product.id, 'description', e.target.value)} /></label></div></article>)}</section>
         <p className="admin-footnote"><ShieldCheck size={15} /> Product settings save locally in this browser; account price and stock are shared in Supabase.</p>
       </>}
 
       {section === 'accounts' && <>
         <section className="admin-account-panel"><div className="admin-section-title"><div><h2>Add an account</h2><p>The password is encrypted before it is saved.</p></div></div>
-          <form className="admin-account-form" onSubmit={addAccount}><label>Username<input value={accountUsername} onChange={e => setAccountUsername(e.target.value)} maxLength={160} autoComplete="off" required /></label><label>Password<input type="password" value={accountPassword} onChange={e => setAccountPassword(e.target.value)} maxLength={1024} autoComplete="new-password" required /></label><label className="aadhaar-verified-toggle"><input type="checkbox" checked={accountAadhaarVerified} onChange={e => setAccountAadhaarVerified(e.target.checked)} /> Aadhaar verified</label><button className="admin-primary" disabled={busy}><KeyRound size={16} /> Add account</button></form>
+          <form className="admin-account-form" onSubmit={addAccount}><label>Username<input value={accountUsername} onChange={e => setAccountUsername(e.target.value)} maxLength={160} autoComplete="off" required /></label><label>Password<div className="admin-password-field"><input type={showAccountPassword ? 'text' : 'password'} value={accountPassword} onChange={e => setAccountPassword(e.target.value)} maxLength={1024} autoComplete="new-password" required /><button type="button" onClick={() => setShowAccountPassword(value => !value)} aria-label={showAccountPassword ? 'Hide password' : 'Show password'} title={showAccountPassword ? 'Hide password' : 'Show password'}>{showAccountPassword ? <EyeOff size={17} /> : <Eye size={17} />}</button></div></label><label className="aadhaar-verified-toggle"><input type="checkbox" checked={accountAadhaarVerified} onChange={e => setAccountAadhaarVerified(e.target.checked)} /> Aadhaar verified</label><button className="admin-primary" disabled={busy}><KeyRound size={16} /> Add account</button></form>
         </section>
         <div className="admin-section-title admin-table-heading"><div><h2>Inventory ({accounts.length})</h2><p>Sold accounts stay in order history and cannot be removed here.</p></div><button className="admin-add" onClick={() => loadAccounts().catch(loadError => setError(loadError.message))} disabled={busy}>Refresh</button></div>
         <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Username</th><th>Type</th><th>Status</th><th>Added</th><th></th></tr></thead><tbody>{accounts.map(account => <tr key={account.id}><td>{account.username}</td><td><span className={`stock-badge ${account.aadhaar_verified ? 'pending-badge' : 'in-stock'}`}>{account.aadhaar_verified ? 'Aadhaar verified' : 'Normal'}</span></td><td><span className={`stock-badge ${account.status === 'available' ? 'in-stock' : 'out-stock'}`}>{account.status}</span></td><td>{formatDate(account.created_at)}</td><td>{account.status === 'available' && <button className="admin-icon-button" aria-label={`Remove ${account.username}`} onClick={() => deleteAccount(account)} disabled={busy}><Trash2 size={16} /></button>}</td></tr>)}{accounts.length === 0 && <tr><td colSpan="5" className="admin-empty">No accounts in inventory yet.</td></tr>}</tbody></table></div>

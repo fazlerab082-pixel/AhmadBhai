@@ -3,6 +3,7 @@
 This feature is for accounts the store owns or is authorized to resell. Passwords are encrypted by the Edge Function before they are stored. Customers receive credentials only after an admin checks the UPI UTR/RRN and approves the order.
 
 1. Run [`account_store.sql`](./account_store.sql) in the Supabase SQL Editor.
+   If the store is already set up and `account_inventory` lacks the Aadhaar flag, run [`add_aadhaar_verified.sql`](./add_aadhaar_verified.sql) there instead; it adds the column and rebuilds both live stock counts.
 2. Create or choose an admin user in Supabase Auth, then set `store_admin: true` in that user's **app metadata**. Do not use user metadata for this flag. For example, from the SQL Editor, replace the email and run:
 
    ```sql

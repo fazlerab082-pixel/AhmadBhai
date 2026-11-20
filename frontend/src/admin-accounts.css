@@ -26,10 +26,14 @@
 .admin-banner.success { border: 1px solid #b8ebd7; background: #e8fbf2; color: #118561; }
 .admin-account-panel { margin-bottom: 28px; padding: 20px 22px; border: 1px solid #e3e7f0; border-radius: 16px; background: #fff; }
 .admin-account-panel .admin-section-title { margin-bottom: 14px; }
-.admin-account-form { display: grid; grid-template-columns: 1fr 1fr auto; align-items: end; gap: 14px; }
+.admin-account-form { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) auto auto; align-items: end; gap: 14px; }
 .admin-account-form label { display: flex; flex-direction: column; gap: 7px; color: #52617a; font-size: 12px; font-weight: 800; }
-.admin-account-form .aadhaar-verified-toggle { min-height: 43px; flex-direction: row; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; }
+.admin-account-form .aadhaar-verified-toggle { min-height: 43px; padding: 0 12px; flex-direction: row; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; border: 1px solid #dce2ec; border-radius: 10px; background: #fbfcfe; cursor: pointer; }
 .aadhaar-verified-toggle input { width: 17px; height: 17px; accent-color: #6e59e8; }
+.admin-password-field { position: relative; width: 100%; }
+.admin-password-field input { width: 100%; padding-right: 42px; }
+.admin-password-field button { position: absolute; top: 50%; right: 9px; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; transform: translateY(-50%); border: 0; border-radius: 7px; background: transparent; color: #69758e; cursor: pointer; }
+.admin-password-field button:hover { background: #edf1f8; color: #293650; }
 .admin-account-form input { height: 43px; padding: 0 12px; border: 1px solid #dce2ec; border-radius: 10px; background: #fbfcfe; color: #202a42; font: 600 14px Nunito, sans-serif; outline: none; }
 .admin-account-form input:focus { border-color: #29cbd0; box-shadow: 0 0 0 3px #29cbd022; }
 .admin-table-heading { margin-top: 8px; }
