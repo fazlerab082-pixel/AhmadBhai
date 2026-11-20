@@ -101,6 +101,13 @@ create trigger refresh_account_store_available_count
   after insert or update or delete on public.account_inventory
   for each statement execute function public.refresh_account_store_available_count();
 
+-- Recalculate both public counts from the account-level Aadhaar flag.
+update public.account_store_settings
+   set available_count = (select count(*)::integer from public.account_inventory where status = 'available' and not aadhaar_verified),
+       aadhaar_available_count = (select count(*)::integer from public.account_inventory where status = 'available' and aadhaar_verified),
+       updated_at = now()
+ where id = true;
+
 create or replace function public.claim_account_store_order(p_order_id uuid)
 returns void
 language plpgsql

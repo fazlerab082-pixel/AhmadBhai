@@ -16,3 +16,5 @@ This feature is for accounts the store owns or is authorized to resell. Password
 5. Sign in at `/admin` with the admin user's Supabase Auth email and password. Add account credentials; tick **Aadhaar verified** to count the account in the Aadhaar section. Set the normal and Aadhaar prices in **Products**, then review submitted orders. Each order type is fulfilled only from its matching inventory. Check the UTR/RRN against the payment before selecting **Verify payment & release**.
 
 The storefront QR is static UPI, so payment is not verified automatically. A pending order does not reserve inventory; inventory is assigned atomically when an admin approves it. Customers need their order ID and access code to retrieve credentials from **Find ID** after approval.
+
+Product stock counts come only from `account_store_settings`, recalculated from available rows in `account_inventory`. The `aadhaar_verified` column determines whether an account contributes to `aadhaar_available_count` or the normal `available_count`; the legacy `aadhaar_inventory` aggregate is not used by the storefront.

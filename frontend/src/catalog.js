@@ -4,7 +4,7 @@ import { supabase } from '../utils/supabase';
 export const DEFAULT_CATALOG = {
   products: [
     { id: 'aadhaar', name: 'AADHAAR VERIFIED ID', stock: 0, price: 249, description: '11:30 BAJE AM TAK GUARANTEE' },
-    { id: 'normal', name: 'NORMAL ID', stock: 80, price: 35, description: 'FRESH NORMAL OLD ID GMAIL VERIFIED LONG TIME USE' },
+    { id: 'normal', name: 'NORMAL ID', stock: 0, price: 35, description: 'FRESH NORMAL OLD ID GMAIL VERIFIED LONG TIME USE' },
   ],
   plans: [1, 2, 5, 10, 20],
 };
@@ -12,8 +12,8 @@ export const DEFAULT_CATALOG = {
 const KEY = 'aslam-bhai-catalog-v1';
 const LEGACY_KEY = 'ahmad-bhai-catalog-v1';
 
-// Product copy remains in localStorage. Shared inventory and account pricing
-// are read from Supabase so the storefront and checkout use the same values.
+// Product copy remains in localStorage; stock and configured prices for the
+// Normal/Aadhaar products come only from Supabase.
 export function readCatalog() {
   try {
     const stored = JSON.parse(localStorage.getItem(KEY) || localStorage.getItem(LEGACY_KEY));
@@ -29,34 +29,20 @@ export function saveCatalog(catalog) {
 }
 
 export function useCatalog() {
-  const [catalog, setCatalog] = React.useState(readCatalog);
+  const [catalog, setCatalog] = React.useState(() => withSupabaseStock(readCatalog()));
   React.useEffect(() => {
     let active = true;
     const applyStoreData = async (baseCatalog = readCatalog()) => {
-      const [aadhaarResult, accountStoreResult] = await Promise.all([
-        supabase.from('aadhaar_inventory').select('available_count').eq('product_key', 'aadhaar').maybeSingle(),
-        supabase.from('account_store_settings').select('available_count, aadhaar_available_count, price_per_account, aadhaar_price_per_account').eq('id', true).maybeSingle(),
-      ]);
+      const { data, error } = await supabase
+        .from('account_store_settings')
+        .select('available_count, aadhaar_available_count, price_per_account, aadhaar_price_per_account')
+        .eq('id', true)
+        .maybeSingle();
 
-      if (aadhaarResult.error) console.error('Could not load Aadhaar inventory from Supabase:', aadhaarResult.error.message);
-      if (accountStoreResult.error) console.error('Could not load account store settings from Supabase:', accountStoreResult.error.message);
+      if (error) console.error('Could not load account inventory counts from Supabase:', error.message);
       if (!active) return;
 
-      setCatalog({
-        ...baseCatalog,
-        products: baseCatalog.products.map(product => {
-          if (product.id === 'aadhaar' && accountStoreResult.data) return { ...product, stock: accountStoreResult.data.aadhaar_available_count, price: Number(accountStoreResult.data.aadhaar_price_per_account) };
-          if (product.id === 'aadhaar' && aadhaarResult.data) return { ...product, stock: aadhaarResult.data.available_count };
-          if (product.id === 'normal' && accountStoreResult.data) {
-            return {
-              ...product,
-              stock: accountStoreResult.data.available_count,
-              price: Number(accountStoreResult.data.price_per_account),
-            };
-          }
-          return product;
-        }),
-      });
+      setCatalog(withSupabaseStock(baseCatalog, data));
     };
     const refresh = () => { void applyStoreData(readCatalog()); };
     void applyStoreData();
@@ -71,4 +57,23 @@ export function useCatalog() {
     };
   }, []);
   return catalog;
+}
+
+function withSupabaseStock(catalog, settings = null) {
+  return {
+    ...catalog,
+    products: catalog.products.map(product => {
+      if (product.id === 'aadhaar') return {
+        ...product,
+        stock: Number(settings?.aadhaar_available_count ?? 0),
+        ...(settings && { price: Number(settings.aadhaar_price_per_account) }),
+      };
+      if (product.id === 'normal') return {
+        ...product,
+        stock: Number(settings?.available_count ?? 0),
+        ...(settings && { price: Number(settings.price_per_account) }),
+      };
+      return product;
+    }),
+  };
 }
