@@ -3,7 +3,7 @@ import { supabase } from '../utils/supabase';
 
 export const DEFAULT_CATALOG = {
   products: [
-    { id: 'aadhaar', name: 'AADHAAR VERIFIED ID', stock: 0, price: 35, description: 'Aadhaar verified IDs' },
+    { id: 'aadhaar', name: 'AADHAAR VERIFIED ID', stock: 0, price: 249, description: '11:30 BAJE AM TAK GUARANTEE' },
     { id: 'normal', name: 'NORMAL ID', stock: 80, price: 35, description: 'FRESH NORMAL OLD ID GMAIL VERIFIED LONG TIME USE' },
   ],
   plans: [1, 2, 5, 10, 20],
@@ -35,7 +35,7 @@ export function useCatalog() {
     const applyStoreData = async (baseCatalog = readCatalog()) => {
       const [aadhaarResult, accountStoreResult] = await Promise.all([
         supabase.from('aadhaar_inventory').select('available_count').eq('product_key', 'aadhaar').maybeSingle(),
-        supabase.from('account_store_settings').select('available_count, price_per_account').eq('id', true).maybeSingle(),
+        supabase.from('account_store_settings').select('available_count, aadhaar_available_count, price_per_account, aadhaar_price_per_account').eq('id', true).maybeSingle(),
       ]);
 
       if (aadhaarResult.error) console.error('Could not load Aadhaar inventory from Supabase:', aadhaarResult.error.message);
@@ -45,6 +45,7 @@ export function useCatalog() {
       setCatalog({
         ...baseCatalog,
         products: baseCatalog.products.map(product => {
+          if (product.id === 'aadhaar' && accountStoreResult.data) return { ...product, stock: accountStoreResult.data.aadhaar_available_count, price: Number(accountStoreResult.data.aadhaar_price_per_account) };
           if (product.id === 'aadhaar' && aadhaarResult.data) return { ...product, stock: aadhaarResult.data.available_count };
           if (product.id === 'normal' && accountStoreResult.data) {
             return {

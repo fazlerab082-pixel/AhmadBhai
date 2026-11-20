@@ -13,6 +13,6 @@ This feature is for accounts the store owns or is authorized to resell. Password
 
 3. Generate a random 32-byte encryption key and save it as the `ACCOUNT_ENCRYPTION_KEY` Edge Function secret. It must be exactly 64 hexadecimal characters. Keep a secure backup: existing encrypted passwords cannot be decrypted if this key is lost or changed.
 4. Deploy the `account-store` Edge Function. `supabase/config.toml` disables the platform JWT check for this function; the function's Supabase server wrapper validates either a signed-in user or the publishable key, and admin operations additionally require `app_metadata.store_admin === true`.
-5. Sign in at `/admin` with the admin user's Supabase Auth email and password. Add account credentials, set the account price, and review submitted orders. Check the UTR/RRN against the payment before selecting **Verify payment & release**.
+5. Sign in at `/admin` with the admin user's Supabase Auth email and password. Add account credentials; tick **Aadhaar verified** to count the account in the Aadhaar section. Set the normal and Aadhaar prices in **Products**, then review submitted orders. Each order type is fulfilled only from its matching inventory. Check the UTR/RRN against the payment before selecting **Verify payment & release**.
 
 The storefront QR is static UPI, so payment is not verified automatically. A pending order does not reserve inventory; inventory is assigned atomically when an admin approves it. Customers need their order ID and access code to retrieve credentials from **Find ID** after approval.

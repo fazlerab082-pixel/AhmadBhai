@@ -584,6 +584,8 @@ a {
   font-size: 8px;
   font-weight: 1000;
 }
+.perk-support-button { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.perk-support-button small { font-size: 8px; font-weight: 1000; white-space: nowrap; }
 .buy-card {
   padding-left: 13px;
   padding-right: 13px;
@@ -605,6 +607,9 @@ a {
   font-size: 11px;
   line-height: 16px;
   box-shadow: 0 5px 0 rgba(0, 0, 0, 0.18);
+}
+.product-subtitle-hidden {
+  visibility: hidden;
 }
 .product-subtitle span {
   color: #4ce5a6;
@@ -905,6 +910,12 @@ a {
   font-size: 10px;
   white-space: nowrap;
 }
+.metric-support-button { display: flex; flex-direction: column; align-items: center; margin-top: 12px; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.metric-support-button strong { font-size: 28px; line-height: 32px; background: linear-gradient(90deg, #ffb437, #ff4ca0); color: transparent; background-clip: text; }
+.metric-support-button small { margin-top: 5px; font-size: 10px; white-space: nowrap; }
+.metric-support-button:hover strong,
+.metric-support-button:hover small,
+.perk-support-button:hover small { filter: brightness(1.2); text-shadow: 0 0 8px rgba(112, 221, 255, .65); }
 .footer {
   height: 86px;
   flex-shrink: 0;
@@ -1129,6 +1140,8 @@ a {
   .metric-card > small {
     font-size: 9px;
   }
+  .metric-support-button strong { font-size: 23px; line-height: 26px; }
+  .metric-support-button small { font-size: 9px; }
   .why h2 {
     font-size: 24px;
   }
@@ -1347,6 +1360,15 @@ a {
     0 0 26px rgba(205, 63, 219, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
+.support-modal-backdrop { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 18px; background: rgba(3, 7, 18, .72); backdrop-filter: blur(5px); }
+.support-modal { position: relative; width: min(360px, 100%); min-height: 220px; padding: 32px 24px 26px; border: 1px solid rgba(74, 199, 235, .8); border-radius: 22px; background: linear-gradient(145deg, #1b2f4b, #121d39 60%, #1a1735); box-shadow: 0 20px 65px #0009, 0 0 26px rgba(38, 190, 238, .22); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; animation: support-pop .18s ease-out; }
+.support-modal-close { position: absolute; top: 12px; right: 12px; width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.18); border-radius: 50%; background: rgba(255,255,255,.08); color: #fff; cursor: pointer; }
+.support-modal-close:hover { background: rgba(255,255,255,.18); transform: rotate(90deg); }
+.support-modal-icon { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 15px; background: linear-gradient(135deg, #16bce6, #397cf4); box-shadow: 0 6px 0 rgba(0,0,0,.28); }
+.support-modal h2 { margin: 17px 0 9px; font-size: 21px; }
+.support-modal-number { color: #c9eaff; font-size: 20px; font-weight: 900; text-decoration: none; }
+.support-modal-number:hover { color: #fff; text-decoration: underline; }
+@keyframes support-pop { from { opacity: 0; transform: translateY(8px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
 /* Let the instructions panel grow naturally with its contents */
 .instructions {
   height: auto;

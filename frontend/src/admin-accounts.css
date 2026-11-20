@@ -28,6 +28,8 @@
 .admin-account-panel .admin-section-title { margin-bottom: 14px; }
 .admin-account-form { display: grid; grid-template-columns: 1fr 1fr auto; align-items: end; gap: 14px; }
 .admin-account-form label { display: flex; flex-direction: column; gap: 7px; color: #52617a; font-size: 12px; font-weight: 800; }
+.admin-account-form .aadhaar-verified-toggle { min-height: 43px; flex-direction: row; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; }
+.aadhaar-verified-toggle input { width: 17px; height: 17px; accent-color: #6e59e8; }
 .admin-account-form input { height: 43px; padding: 0 12px; border: 1px solid #dce2ec; border-radius: 10px; background: #fbfcfe; color: #202a42; font: 600 14px Nunito, sans-serif; outline: none; }
 .admin-account-form input:focus { border-color: #29cbd0; box-shadow: 0 0 0 3px #29cbd022; }
 .admin-table-heading { margin-top: 8px; }
@@ -50,6 +52,6 @@
   .admin-account-panel { padding: 16px; }
   .admin-account-form { grid-template-columns: 1fr; }
   .admin-account-form .admin-primary { width: 100%; }
-  .admin-table { min-width: 680px; }
+  .admin-table { min-width: 760px; }
   .admin-account-form input { width: 100%; }
 }

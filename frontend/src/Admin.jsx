@@ -28,6 +28,7 @@ export default function Admin() {
   const [orders, setOrders] = React.useState([]);
   const [accountUsername, setAccountUsername] = React.useState('');
   const [accountPassword, setAccountPassword] = React.useState('');
+  const [accountAadhaarVerified, setAccountAadhaarVerified] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const [notice, setNotice] = React.useState('');
 
@@ -118,8 +119,9 @@ export default function Admin() {
     setBusy(true);
     setError('');
     try {
-      const accountProduct = catalog.products.find(product => product.id === 'normal');
-      if (accountProduct) await accountStoreRequest({ action: 'setPrice', price: accountProduct.price });
+      for (const product of catalog.products.filter(item => item.id === 'normal' || item.id === 'aadhaar')) {
+        await accountStoreRequest({ action: 'setPrice', accountType: product.id, price: product.price });
+      }
       saveCatalog(catalog);
       setSaved(true);
       window.setTimeout(() => setSaved(false), 2600);
@@ -137,9 +139,10 @@ export default function Admin() {
     setError('');
     setNotice('');
     try {
-      await accountStoreRequest({ action: 'addAccount', username: accountUsername, password: accountPassword });
+      await accountStoreRequest({ action: 'addAccount', username: accountUsername, password: accountPassword, aadhaarVerified: accountAadhaarVerified });
       setAccountUsername('');
       setAccountPassword('');
+      setAccountAadhaarVerified(false);
       await loadAccounts();
       window.dispatchEvent(new Event('catalog-updated'));
       setNotice('Account added to available inventory.');
@@ -218,22 +221,22 @@ export default function Admin() {
       {notice && <p className="admin-banner success" role="status"><Check size={16} /> {notice}</p>}
 
       {section === 'products' && <>
-        <div className="admin-section-title"><div><h2>Product catalog</h2><p>Normal ID price and stock are shared through Supabase.</p></div><button className="admin-add" onClick={addProduct}><PackagePlus size={17} /> Add product</button></div>
-        <section className="admin-products">{catalog.products.map((product, index) => <article className="admin-product" key={product.id}><div className="admin-product-top"><div className="admin-product-number">{String(index + 1).padStart(2, '0')}</div><div><h3>{product.name || 'Untitled product'}</h3><span className={product.stock > 0 ? 'stock-badge in-stock' : 'stock-badge out-stock'}>{product.stock > 0 ? 'In stock' : 'Out of stock'}</span></div></div><div className="admin-fields"><label>Product name<input value={product.name} onChange={e => updateProduct(product.id, 'name', e.target.value)} /></label><label>Price per ID (₹)<input type="number" min="0" step="0.01" value={product.price} disabled={product.id !== 'normal'} onChange={e => updateProduct(product.id, 'price', e.target.value)} /></label><label>Stock quantity<input type="number" min="0" value={product.stock} disabled={product.id === 'aadhaar' || product.id === 'normal'} onChange={e => updateProduct(product.id, 'stock', e.target.value)} /></label><label className="field-wide">Description<input value={product.description} onChange={e => updateProduct(product.id, 'description', e.target.value)} /></label></div></article>)}</section>
+        <div className="admin-section-title"><div><h2>Product catalog</h2><p>Normal and Aadhaar ID prices and stock are shared through Supabase.</p></div><button className="admin-add" onClick={addProduct}><PackagePlus size={17} /> Add product</button></div>
+        <section className="admin-products">{catalog.products.map((product, index) => <article className="admin-product" key={product.id}><div className="admin-product-top"><div className="admin-product-number">{String(index + 1).padStart(2, '0')}</div><div><h3>{product.name || 'Untitled product'}</h3><span className={product.stock > 0 ? 'stock-badge in-stock' : 'stock-badge out-stock'}>{product.stock > 0 ? 'In stock' : 'Out of stock'}</span></div></div><div className="admin-fields"><label>Product name<input value={product.name} onChange={e => updateProduct(product.id, 'name', e.target.value)} /></label><label>Price per ID (₹)<input type="number" min="0" step="0.01" value={product.price} disabled={product.id !== 'normal' && product.id !== 'aadhaar'} onChange={e => updateProduct(product.id, 'price', e.target.value)} /></label><label>Stock quantity<input type="number" min="0" value={product.stock} disabled={product.id === 'aadhaar' || product.id === 'normal'} onChange={e => updateProduct(product.id, 'stock', e.target.value)} /></label><label className="field-wide">Description<input value={product.description} onChange={e => updateProduct(product.id, 'description', e.target.value)} /></label></div></article>)}</section>
         <p className="admin-footnote"><ShieldCheck size={15} /> Product settings save locally in this browser; account price and stock are shared in Supabase.</p>
       </>}
 
       {section === 'accounts' && <>
         <section className="admin-account-panel"><div className="admin-section-title"><div><h2>Add an account</h2><p>The password is encrypted before it is saved.</p></div></div>
-          <form className="admin-account-form" onSubmit={addAccount}><label>Username<input value={accountUsername} onChange={e => setAccountUsername(e.target.value)} maxLength={160} autoComplete="off" required /></label><label>Password<input type="password" value={accountPassword} onChange={e => setAccountPassword(e.target.value)} maxLength={1024} autoComplete="new-password" required /></label><button className="admin-primary" disabled={busy}><KeyRound size={16} /> Add account</button></form>
+          <form className="admin-account-form" onSubmit={addAccount}><label>Username<input value={accountUsername} onChange={e => setAccountUsername(e.target.value)} maxLength={160} autoComplete="off" required /></label><label>Password<input type="password" value={accountPassword} onChange={e => setAccountPassword(e.target.value)} maxLength={1024} autoComplete="new-password" required /></label><label className="aadhaar-verified-toggle"><input type="checkbox" checked={accountAadhaarVerified} onChange={e => setAccountAadhaarVerified(e.target.checked)} /> Aadhaar verified</label><button className="admin-primary" disabled={busy}><KeyRound size={16} /> Add account</button></form>
         </section>
         <div className="admin-section-title admin-table-heading"><div><h2>Inventory ({accounts.length})</h2><p>Sold accounts stay in order history and cannot be removed here.</p></div><button className="admin-add" onClick={() => loadAccounts().catch(loadError => setError(loadError.message))} disabled={busy}>Refresh</button></div>
-        <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Username</th><th>Status</th><th>Added</th><th></th></tr></thead><tbody>{accounts.map(account => <tr key={account.id}><td>{account.username}</td><td><span className={`stock-badge ${account.status === 'available' ? 'in-stock' : 'out-stock'}`}>{account.status}</span></td><td>{formatDate(account.created_at)}</td><td>{account.status === 'available' && <button className="admin-icon-button" aria-label={`Remove ${account.username}`} onClick={() => deleteAccount(account)} disabled={busy}><Trash2 size={16} /></button>}</td></tr>)}{accounts.length === 0 && <tr><td colSpan="4" className="admin-empty">No accounts in inventory yet.</td></tr>}</tbody></table></div>
+        <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Username</th><th>Type</th><th>Status</th><th>Added</th><th></th></tr></thead><tbody>{accounts.map(account => <tr key={account.id}><td>{account.username}</td><td><span className={`stock-badge ${account.aadhaar_verified ? 'pending-badge' : 'in-stock'}`}>{account.aadhaar_verified ? 'Aadhaar verified' : 'Normal'}</span></td><td><span className={`stock-badge ${account.status === 'available' ? 'in-stock' : 'out-stock'}`}>{account.status}</span></td><td>{formatDate(account.created_at)}</td><td>{account.status === 'available' && <button className="admin-icon-button" aria-label={`Remove ${account.username}`} onClick={() => deleteAccount(account)} disabled={busy}><Trash2 size={16} /></button>}</td></tr>)}{accounts.length === 0 && <tr><td colSpan="5" className="admin-empty">No accounts in inventory yet.</td></tr>}</tbody></table></div>
       </>}
 
       {section === 'orders' && <>
         <div className="admin-section-title"><div><h2>Submitted orders</h2><p>Verify payment in your UPI records before releasing credentials.</p></div><button className="admin-add" onClick={() => loadOrders().catch(loadError => setError(loadError.message))} disabled={busy}>Refresh</button></div>
-        <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>UTR/RRN</th><th>Order</th><th>Qty</th><th>Amount</th><th>Status</th><th>Submitted</th><th></th></tr></thead><tbody>{orders.map(order => <tr key={order.id}><td className="admin-utr">{order.utr}</td><td className="admin-order-id">{order.id}</td><td>{order.quantity}</td><td>₹{Number(order.amount).toFixed(2)}</td><td><span className={`stock-badge ${order.status === 'fulfilled' ? 'in-stock' : 'pending-badge'}`}>{order.status === 'fulfilled' ? 'Fulfilled' : 'Pending review'}</span></td><td>{formatDate(order.created_at)}</td><td>{order.status === 'pending_review' && <button className="admin-approve" onClick={() => approveOrder(order)} disabled={busy}>Verify payment &amp; release</button>}</td></tr>)}{orders.length === 0 && <tr><td colSpan="7" className="admin-empty">No orders submitted yet.</td></tr>}</tbody></table></div>
+        <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>UTR/RRN</th><th>Order</th><th>Type</th><th>Qty</th><th>Amount</th><th>Status</th><th>Submitted</th><th></th></tr></thead><tbody>{orders.map(order => <tr key={order.id}><td className="admin-utr">{order.utr}</td><td className="admin-order-id">{order.id}</td><td>{order.account_type === 'aadhaar' ? 'Aadhaar verified' : 'Normal'}</td><td>{order.quantity}</td><td>₹{Number(order.amount).toFixed(2)}</td><td><span className={`stock-badge ${order.status === 'fulfilled' ? 'in-stock' : 'pending-badge'}`}>{order.status === 'fulfilled' ? 'Fulfilled' : 'Pending review'}</span></td><td>{formatDate(order.created_at)}</td><td>{order.status === 'pending_review' && <button className="admin-approve" onClick={() => approveOrder(order)} disabled={busy}>Verify payment &amp; release</button>}</td></tr>)}{orders.length === 0 && <tr><td colSpan="8" className="admin-empty">No orders submitted yet.</td></tr>}</tbody></table></div>
       </>}
 
       <p className="admin-footnote"><ShieldCheck size={15} /> Admin access is checked by Supabase Auth app metadata and the account-store Edge Function.</p>

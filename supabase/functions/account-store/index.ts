@@ -82,6 +82,7 @@ async function handleRequest(req: Request, ctx: any) {
   if (action === "submitOrder") {
     const quantity = Number(body.quantity);
     const amount = Number(body.amount);
+    const accountType = body.accountType === "aadhaar" ? "aadhaar" : "normal";
     const utr = String(body.utr ?? "").trim().toUpperCase();
     const accessCode = String(body.accessCode ?? "");
     if (!Number.isInteger(quantity) || quantity < 1 || quantity > 20) {
@@ -92,13 +93,15 @@ async function handleRequest(req: Request, ctx: any) {
 
     const { data: settings, error: settingsError } = await db
       .from("account_store_settings")
-      .select("price_per_account, available_count")
+      .select("price_per_account, aadhaar_price_per_account, available_count, aadhaar_available_count")
       .eq("id", true)
       .single();
     if (settingsError || !settings) return json({ error: "Store settings are unavailable." }, 503);
-    if (quantity > settings.available_count) return json({ error: "There is not enough stock for this quantity." }, 409);
+    const availableCount = accountType === "aadhaar" ? settings.aadhaar_available_count : settings.available_count;
+    const pricePerAccount = accountType === "aadhaar" ? settings.aadhaar_price_per_account : settings.price_per_account;
+    if (quantity > availableCount) return json({ error: "There is not enough stock for this quantity." }, 409);
 
-    const expectedAmount = Math.round(Number(settings.price_per_account) * quantity * 100);
+    const expectedAmount = Math.round(Number(pricePerAccount) * quantity * 100);
     if (!Number.isFinite(amount) || Math.round(amount * 100) !== expectedAmount) {
       return json({ error: "The order amount changed. Refresh the store and try again." }, 409);
     }
@@ -109,16 +112,17 @@ async function handleRequest(req: Request, ctx: any) {
       .insert({
         utr,
         quantity,
+        account_type: accountType,
         amount: expectedAmount / 100,
         access_token_hash: accessTokenHash,
       })
-      .select("id, quantity, amount, status")
+      .select("id, quantity, amount, account_type, status")
       .single();
     if (error) {
       if (error.code === "23505") {
         const { data: existingOrder } = await db
           .from("account_store_orders")
-          .select("id, quantity, amount, status")
+          .select("id, quantity, amount, account_type, status")
           .eq("utr", utr)
           .eq("access_token_hash", accessTokenHash)
           .maybeSingle();
@@ -169,7 +173,7 @@ async function handleRequest(req: Request, ctx: any) {
   if (action === "listAccounts") {
     const { data, error } = await db
       .from("account_inventory")
-      .select("id, username, status, created_at")
+      .select("id, username, aadhaar_verified, status, created_at")
       .order("created_at", { ascending: false });
     if (error) return json({ error: "Could not load account inventory." }, 500);
     return json({ accounts: data ?? [] });
@@ -178,12 +182,14 @@ async function handleRequest(req: Request, ctx: any) {
   if (action === "addAccount") {
     const username = String(body.username ?? "").trim();
     const password = String(body.password ?? "");
+    const aadhaarVerified = body.aadhaarVerified === true;
     if (!username || username.length > 160 || !password || password.length > 1024) {
       return json({ error: "Enter a username and password within the allowed length." }, 400);
     }
     const { error } = await db.from("account_inventory").insert({
       username,
       password_ciphertext: await encryptPassword(password),
+      aadhaar_verified: aadhaarVerified,
     });
     if (error) {
       if (error.code === "23505") return json({ error: "That username is already in the inventory." }, 409);
@@ -210,7 +216,7 @@ async function handleRequest(req: Request, ctx: any) {
   if (action === "listOrders") {
     const { data, error } = await db
       .from("account_store_orders")
-      .select("id, utr, quantity, amount, status, created_at, fulfilled_at")
+      .select("id, utr, account_type, quantity, amount, status, created_at, fulfilled_at")
       .order("created_at", { ascending: false })
       .limit(100);
     if (error) return json({ error: "Could not load orders." }, 500);
@@ -235,7 +241,8 @@ async function handleRequest(req: Request, ctx: any) {
     const price = Number(body.price);
     if (!Number.isFinite(price) || price < 0 || price > 100000) return json({ error: "Enter a valid price." }, 400);
     const roundedPrice = Math.round(price * 100) / 100;
-    const { error } = await db.from("account_store_settings").update({ price_per_account: roundedPrice, updated_at: new Date().toISOString() }).eq("id", true);
+    const priceColumn = body.accountType === "aadhaar" ? "aadhaar_price_per_account" : "price_per_account";
+    const { error } = await db.from("account_store_settings").update({ [priceColumn]: roundedPrice, updated_at: new Date().toISOString() }).eq("id", true);
     if (error) return json({ error: "Could not save the account price." }, 500);
     return json({ ok: true });
   }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Home, Search, Mail, MessageCircle, ShieldCheck, Zap, Headphones, ClipboardCheck, Check, ChartNoAxesCombined, Clock3, UsersRound, Instagram, Send, ExternalLink, Sparkles, X, ArrowLeft, CircleCheck } from 'lucide-react';
+import { Home, Search, Mail, MessageCircle, ShieldCheck, Zap, Headphones, ClipboardCheck, Check, ChartNoAxesCombined, Clock3, UsersRound, Instagram, Send, ExternalLink, Sparkles, ArrowLeft, CircleCheck, X } from 'lucide-react';
 import paymentQr from './payment-qr.png';
 import './styles.css';
 import { useCatalog } from './catalog.js';
@@ -12,21 +12,30 @@ function Brand({ footer = false }) {
   return footer ? <div className="footer-brand"><span className="footer-spark"><Sparkles size={20} fill="white" /></span><span><b>AHMAD BHAI OFFICIAL</b><small>PREMIUM ID PROVIDER</small></span></div> : <div className="brand"><div className="brand-mark"><span>AB</span></div><div className="brand-word"><b><i>AHMAD</i><em>_BHAI</em></b><small>PREMIUM STORE</small></div></div>;
 }
 
-function Perks() {
-  return <div className="perks"><div><span className="perk-icon secure"><ShieldCheck /></span><small>100% Secure</small></div><div><span className="perk-icon instant"><Zap /></span><small>Instant</small></div><div><span className="perk-icon support"><Headphones /></span><small>24/7 Support</small></div></div>;
+function Perks({ onSupportClick }) {
+  return <div className="perks"><div><span className="perk-icon secure"><ShieldCheck /></span><small>100% Secure</small></div><div><span className="perk-icon instant"><Zap /></span><small>Instant</small></div><div><button className="perk-support-button" type="button" onClick={onSupportClick}><span className="perk-icon support"><Headphones /></span><small>24/7 Support</small></button></div></div>;
 }
 
-function StockCard({ product }) {
-  const available = product.stock > 0;
-  return <article className="product-card empty-card">
-    <div className="stock-pill"><Zap size={12} fill="currentColor" /> LIMITED STOCK</div>
-    <h2 className="product-title"><span>🔥</span> {product.name} <span className="verified">✓</span><span className="stock-zero">: {product.stock}</span></h2>
-    <div className="empty-state"><span className="empty-x">{available ? <Zap size={34} /> : <X size={34} strokeWidth={4} />}</span><h3>{available ? 'Available Now' : 'Out of Stock'}</h3><p>{available ? `₹${product.price} per ID` : "We'll be back with more IDs soon!"}</p></div>
-    <Perks />
-  </article>;
+function SupportModal({ onClose }) {
+  React.useEffect(() => {
+    function closeOnEscape(event) {
+      if (event.key === 'Escape') onClose();
+    }
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [onClose]);
+
+  return <div className="support-modal-backdrop" onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
+    <section className="support-modal" role="dialog" aria-modal="true" aria-labelledby="support-modal-title">
+      <button className="support-modal-close" type="button" onClick={onClose} aria-label="Close support window"><X size={20} /></button>
+      <span className="support-modal-icon"><Headphones size={25} /></span>
+      <h2 id="support-modal-title">24/7 Support</h2>
+      <a className="support-modal-number" href="tel:+918789393838">+91 87893 93838</a>
+    </section>
+  </div>;
 }
 
-function BuyCard({ onBuy, product, plans }) {
+function BuyCard({ onBuy, onSupportClick, product, plans }) {
   const [selected, setSelected] = React.useState(1);
   const [custom, setCustom] = React.useState('');
   const [customActive, setCustomActive] = React.useState(false);
@@ -36,7 +45,7 @@ function BuyCard({ onBuy, product, plans }) {
   return <article className="product-card buy-card">
     <div className="stock-pill"><Zap size={12} fill="currentColor" /> LIMITED STOCK</div>
     <h2 className="product-title"><span>🔥</span> {product.name} <span className="verified">✓</span></h2>
-    <div className="product-subtitle">{product.description} <span>✓</span></div>
+    <div className={`product-subtitle ${product.id === 'aadhaar' ? 'product-subtitle-hidden' : ''}`}>{product.description} <span>✓</span></div>
     <div className="stock-line"><span>STOCK AVAILABLE</span><b>{product.stock} LEFT</b></div><div className="progress"><span style={{ width: `${Math.min(100, product.stock)}%` }} /></div>
     <div className="choose-label">SELECT A PACKAGE</div>
     <div className="plans">{plans.map(count => <button key={count} disabled={count > product.stock} className={`plan ${selected === count && !customActive ? 'active' : ''}`} onClick={() => { setSelected(count); setCustomActive(false); }}><strong>{count} ID{count > 1 ? 's' : ''}</strong><small>₹{count * product.price}</small></button>)}
@@ -44,20 +53,20 @@ function BuyCard({ onBuy, product, plans }) {
     </div>
     <div className="total"><small>TOTAL</small><strong><span>₹</span>{total.toFixed(2)}</strong></div>
     {!canBuy && product.stock > 0 && <p className="stock-warning">Select a quantity within available stock.</p>}
-    <button className="buy-button" disabled={!canBuy} onClick={() => onBuy(total, quantity)}><Zap size={15} fill="currentColor" /> Buy Now -₹{total.toFixed(2)}</button>
-    <Perks />
+    <button className="buy-button" disabled={!canBuy} onClick={() => onBuy(total, quantity, product.id)}><Zap size={15} fill="currentColor" /> Buy Now -₹{total.toFixed(2)}</button>
+    <Perks onSupportClick={onSupportClick} />
   </article>;
 }
 
 const instructions = ['Do not change the ID password through software', 'Do not sync the ID through software', 'Avoid changing multiple IDs from same IP', 'If pending, contact us on support'];
-const metrics = [{ icon: ChartNoAxesCombined, value: '100%', label: 'Success Rate', color: 'mint' }, { icon: Clock3, value: '24/7', label: 'Support', color: 'blue' }, { icon: UsersRound, value: '1000+', label: 'Happy Customers', color: 'pink' }];
+const metrics = [{ icon: ChartNoAxesCombined, value: '100%', label: 'Success Rate', color: 'mint' }, { icon: Clock3, value: '24/7', label: 'Support', phone: true, color: 'blue' }, { icon: UsersRound, value: '1000+', label: 'Happy Customers', color: 'pink' }];
 
 function makeAccessCode() {
   const bytes = crypto.getRandomValues(new Uint8Array(32));
   return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
-function PaymentModal({ amount, quantity, onClose }) {
+function PaymentModal({ amount, quantity, accountType, onClose }) {
   const [secondsLeft, setSecondsLeft] = React.useState(10 * 60);
   const [utr, setUtr] = React.useState('');
   const [order, setOrder] = React.useState(null);
@@ -76,7 +85,7 @@ function PaymentModal({ amount, quantity, onClose }) {
     setSubmitting(true);
     setError('');
     try {
-      const result = await accountStoreRequest({ action: 'submitOrder', amount, quantity, utr, accessCode });
+      const result = await accountStoreRequest({ action: 'submitOrder', amount, quantity, accountType, utr, accessCode });
       const savedOrder = { ...result.order, accessCode };
       localStorage.setItem('aslam-last-order', JSON.stringify(savedOrder));
       setOrder(result.order);
@@ -99,7 +108,7 @@ function PaymentModal({ amount, quantity, onClose }) {
     <section className="payment-modal" role="dialog" aria-modal="true" aria-labelledby="payment-title">
       <div className="payment-inner">
         <div className="payment-heading"><button className="payment-back" onClick={onClose} aria-label="Go back"><ArrowLeft size={21} /></button><h2 id="payment-title">AHMAD BHAI PAY</h2><span /></div>
-        <div className="payment-summary"><strong>AHMAD BHAI Pay · {quantity} account{quantity > 1 ? 's' : ''}</strong><b>Pay ₹{amount.toFixed(2)}</b></div>
+        <div className="payment-summary"><strong>{accountType === 'aadhaar' ? 'Aadhaar Verified ID' : 'Normal ID'} · {quantity} account{quantity > 1 ? 's' : ''}</strong><b>Pay ₹{amount.toFixed(2)}</b></div>
         <div className="payment-method"><div className="payment-method-info"><strong>Scan with any UPI app</strong><div className="upi-brands"><b className="paytm">paytm</b><span className="gpay">▶</span><span className="phonepe">●</span><span className="bhim">●</span></div><small>&amp; more</small></div><img className="qr-placeholder" src={paymentQr} alt="UPI payment QR code" /></div>
         {!order ? <form className="payment-order-form" onSubmit={submitOrder}>
           <p>After paying ₹{amount.toFixed(2)}, enter the UTR/RRN shown in your UPI app.</p>
@@ -123,19 +132,22 @@ function PaymentModal({ amount, quantity, onClose }) {
 
 export default function HomePage() {
   const [checkout, setCheckout] = React.useState(null);
+  const [supportOpen, setSupportOpen] = React.useState(false);
+  const closeSupport = React.useCallback(() => setSupportOpen(false), []);
   const catalog = useCatalog();
   const aadhaar = catalog.products.find(product => product.id === 'aadhaar') || catalog.products[0];
   const normal = catalog.products.find(product => product.id === 'normal') || catalog.products[1] || catalog.products[0];
   return <div className="app-shell">
     <header className="topbar"><Brand /><nav className="nav-links"><a className="nav-btn home" href="#home"><Home />Home</a><Link className="nav-btn find-id" to="/find-id"><Search />Find ID</Link><a className="nav-btn find-mail" href="#products"><Mail />Find Mail</a><a className="nav-btn support-nav" href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer"><MessageCircle />Support</a><a className="nav-btn contact" href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer"><Mail />Contact</a></nav></header>
     <main id="home" className="main-area"><div className="content-grid">
-      <section className="products-area" id="products"><div className="products-row">{aadhaar && <StockCard product={aadhaar} />}{normal && <BuyCard product={normal} plans={catalog.plans} onBuy={(amount, quantity) => setCheckout({ amount, quantity })} />}</div><a className="whatsapp-link" href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer"><MessageCircle size={20} /><span>Join WhatsApp Group</span><ExternalLink size={13} /></a></section>
+      <section className="products-area" id="products"><div className="products-row">{aadhaar && <BuyCard product={aadhaar} plans={catalog.plans} onSupportClick={() => setSupportOpen(true)} onBuy={(amount, quantity, accountType) => setCheckout({ amount, quantity, accountType })} />}{normal && <BuyCard product={normal} plans={catalog.plans} onSupportClick={() => setSupportOpen(true)} onBuy={(amount, quantity, accountType) => setCheckout({ amount, quantity, accountType })} />}</div><a className="whatsapp-link" href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer"><MessageCircle size={20} /><span>Join WhatsApp Group</span><ExternalLink size={13} /></a></section>
       <aside className="info-area"><section className="instructions panel"><h2><span className="clipboard"><ClipboardCheck size={21} /></span><span>Important<br />Instructions</span></h2><ul>{instructions.map(text => <li key={text}><span className="check"><Check size={16} strokeWidth={3.5} /></span><b>{text}</b></li>)}</ul></section>
-        <section className="why"><h2>Why Choose Our <span>IDs?</span></h2><div className="metrics">{metrics.map(({ icon: Icon, value, label, color }) => <article className="metric-card" key={label}><div className={`metric-icon ${color}`}><Icon /></div><strong>{value}</strong><small>{label}</small></article>)}</div></section>
+        <section className="why"><h2>Why Choose Our <span>IDs?</span></h2><div className="metrics">{metrics.map(({ icon: Icon, value, label, phone, color }) => <article className={`metric-card ${phone ? 'support-metric' : ''}`} key={label}><div className={`metric-icon ${color}`}><Icon /></div>{phone ? <button className="metric-support-button" type="button" onClick={() => setSupportOpen(true)}><strong>{value}</strong><small>{label}</small></button> : <><strong>{value}</strong><small>{label}</small></>}</article>)}</div></section>
       </aside>
     </div></main>
     <footer className="footer"><Brand footer /><div className="socials"><a href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><MessageCircle /></a><a href="#support" aria-label="Telegram"><Send /></a><a href="#support" aria-label="Instagram"><Instagram /></a></div><p>Copyright © 2026 AHMAD BHAI OFFICIAL<br />All Rights Reserved</p></footer>
     <a className="chat-float" href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer" aria-label="Chat with support"><MessageCircle size={23} fill="white" /></a>
-    {checkout !== null && <PaymentModal amount={checkout.amount} quantity={checkout.quantity} onClose={() => setCheckout(null)} />}
+    {supportOpen && <SupportModal onClose={closeSupport} />}
+    {checkout !== null && <PaymentModal amount={checkout.amount} quantity={checkout.quantity} accountType={checkout.accountType} onClose={() => setCheckout(null)} />}
   </div>;
 }
