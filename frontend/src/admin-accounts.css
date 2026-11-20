@@ -1,0 +1,55 @@
+.admin-side-button {
+  position: relative;
+  height: 43px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #a9b6ce;
+  text-align: left;
+  font: 800 13px Nunito, sans-serif;
+  cursor: pointer;
+}
+.admin-side-button:hover,
+.admin-side-button.selected { background: #273452; color: #7dece1; }
+.admin-nav-count { min-width: 20px; height: 20px; margin-left: auto; padding: 0 5px; border-radius: 10px; background: #e8469f; color: white; display: grid; place-items: center; font-size: 10px; }
+.admin-login input[type="email"] { text-transform: none; }
+.admin-primary:disabled,
+.admin-add:disabled,
+.admin-icon-button:disabled,
+.admin-approve:disabled { opacity: .6; cursor: wait; }
+.admin-banner { display: flex; align-items: center; gap: 8px; margin: 0 0 18px; padding: 11px 14px; border-radius: 10px; font-size: 12px; font-weight: 800; }
+.admin-banner.error { border: 1px solid #ffc3cf; background: #fff0f3; color: #ba3451; }
+.admin-banner.success { border: 1px solid #b8ebd7; background: #e8fbf2; color: #118561; }
+.admin-account-panel { margin-bottom: 28px; padding: 20px 22px; border: 1px solid #e3e7f0; border-radius: 16px; background: #fff; }
+.admin-account-panel .admin-section-title { margin-bottom: 14px; }
+.admin-account-form { display: grid; grid-template-columns: 1fr 1fr auto; align-items: end; gap: 14px; }
+.admin-account-form label { display: flex; flex-direction: column; gap: 7px; color: #52617a; font-size: 12px; font-weight: 800; }
+.admin-account-form input { height: 43px; padding: 0 12px; border: 1px solid #dce2ec; border-radius: 10px; background: #fbfcfe; color: #202a42; font: 600 14px Nunito, sans-serif; outline: none; }
+.admin-account-form input:focus { border-color: #29cbd0; box-shadow: 0 0 0 3px #29cbd022; }
+.admin-table-heading { margin-top: 8px; }
+.admin-table-wrap { width: 100%; overflow: auto; border: 1px solid #e3e7f0; border-radius: 14px; background: #fff; }
+.admin-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
+.admin-table th { padding: 13px 14px; background: #f7f8fc; color: #69758e; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
+.admin-table td { padding: 13px 14px; border-top: 1px solid #edf0f5; color: #293650; vertical-align: middle; }
+.admin-table td:first-child { font-weight: 800; }
+.admin-empty { padding: 28px !important; text-align: center; color: #78849a !important; font-weight: 600 !important; }
+.admin-icon-button { width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid #ffd3da; border-radius: 9px; background: #fff4f6; color: #d8415a; cursor: pointer; }
+.admin-utr { font-family: ui-monospace, monospace; white-space: nowrap; }
+.admin-order-id { max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: ui-monospace, monospace; font-size: 10px; }
+.pending-badge { background: #fff4d9; color: #9b6500; }
+.admin-approve { min-height: 34px; padding: 0 10px; border: 0; border-radius: 9px; background: #172344; color: #fff; font: 800 10px Nunito, sans-serif; white-space: nowrap; cursor: pointer; }
+.admin-approve:hover { background: #294174; }
+.admin-table .stock-badge { white-space: nowrap; }
+
+@media (max-width: 760px) {
+  .admin-side-button { height: 38px; padding: 0 9px; font-size: 11px; }
+  .admin-account-panel { padding: 16px; }
+  .admin-account-form { grid-template-columns: 1fr; }
+  .admin-account-form .admin-primary { width: 100%; }
+  .admin-table { min-width: 680px; }
+  .admin-account-form input { width: 100%; }
+}

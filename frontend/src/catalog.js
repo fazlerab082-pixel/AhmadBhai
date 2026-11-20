@@ -12,8 +12,8 @@ export const DEFAULT_CATALOG = {
 const KEY = 'aslam-bhai-catalog-v1';
 const LEGACY_KEY = 'ahmad-bhai-catalog-v1';
 
-// Product details remain in localStorage; Aadhaar available quantity is read
-// from Supabase so every storefront visitor sees the shared count.
+// Product copy remains in localStorage. Shared inventory and account pricing
+// are read from Supabase so the storefront and checkout use the same values.
 export function readCatalog() {
   try {
     const stored = JSON.parse(localStorage.getItem(KEY) || localStorage.getItem(LEGACY_KEY));
@@ -32,33 +32,33 @@ export function useCatalog() {
   const [catalog, setCatalog] = React.useState(readCatalog);
   React.useEffect(() => {
     let active = true;
-    const applyAadhaarCount = async (baseCatalog = readCatalog()) => {
-      const { data, error } = await supabase
-        .from('aadhaar_inventory')
-        .select('available_count')
-        .eq('product_key', 'aadhaar')
-        .maybeSingle();
+    const applyStoreData = async (baseCatalog = readCatalog()) => {
+      const [aadhaarResult, accountStoreResult] = await Promise.all([
+        supabase.from('aadhaar_inventory').select('available_count').eq('product_key', 'aadhaar').maybeSingle(),
+        supabase.from('account_store_settings').select('available_count, price_per_account').eq('id', true).maybeSingle(),
+      ]);
 
-      if (error) {
-        console.error('Could not load Aadhaar inventory from Supabase:', error.message);
-        if (active) setCatalog(baseCatalog);
-        return;
-      }
-
+      if (aadhaarResult.error) console.error('Could not load Aadhaar inventory from Supabase:', aadhaarResult.error.message);
+      if (accountStoreResult.error) console.error('Could not load account store settings from Supabase:', accountStoreResult.error.message);
       if (!active) return;
-      if (data) {
-        setCatalog({
-          ...baseCatalog,
-          products: baseCatalog.products.map(product => product.id === 'aadhaar'
-            ? { ...product, stock: data.available_count }
-            : product),
-        });
-      } else {
-        setCatalog(baseCatalog);
-      }
+
+      setCatalog({
+        ...baseCatalog,
+        products: baseCatalog.products.map(product => {
+          if (product.id === 'aadhaar' && aadhaarResult.data) return { ...product, stock: aadhaarResult.data.available_count };
+          if (product.id === 'normal' && accountStoreResult.data) {
+            return {
+              ...product,
+              stock: accountStoreResult.data.available_count,
+              price: Number(accountStoreResult.data.price_per_account),
+            };
+          }
+          return product;
+        }),
+      });
     };
-    const refresh = () => { void applyAadhaarCount(readCatalog()); };
-    void applyAadhaarCount();
+    const refresh = () => { void applyStoreData(readCatalog()); };
+    void applyStoreData();
     window.addEventListener('catalog-updated', refresh);
     window.addEventListener('storage', refresh);
     const interval = window.setInterval(refresh, 30_000);

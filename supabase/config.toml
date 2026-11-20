@@ -1,0 +1,4 @@
+project_id = "ahmad-bhai-storefront"
+
+[functions.account-store]
+verify_jwt = false
